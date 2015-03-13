@@ -9,7 +9,7 @@
     document.timeline.play(anim);
   });
 
-  var frameFrom = 0.5, frameTo = 10,
+  var frameFrom = 0.5, frameTo = 20,
       img = document.querySelector('img');
 
   function test(t, ele, anim) {

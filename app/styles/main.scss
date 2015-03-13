@@ -9,9 +9,10 @@ html, body {
   width: 150px;
   height: 150px;
   overflow: hidden;
-  transform-origin: center;
+  transform-origin: 30px 30px;
   transform: scale(0.5);
   border-radius: 50%;
+  will-change: transform;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
 }
 
@@ -19,6 +20,7 @@ html, body {
   position: absolute;
   width: 100vw;
   height: auto;
-  transform-origin: 75px 75px;
+  transform-origin: 30px 30px;
+  will-change: transform;
   transform: scale(2);
 }
