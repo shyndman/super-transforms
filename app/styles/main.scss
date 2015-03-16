@@ -30,12 +30,12 @@ html, body {
 
 @media (orientation: landscape) {
   #frame img {
-    width: 100vh;
+    width: 100vmax;
   }
 }
 
 @media (orientation: portrait) {
   #frame img {
-    width: 100vw;
+    width: 100vmin;
   }
 }
