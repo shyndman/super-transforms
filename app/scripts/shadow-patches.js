@@ -4,6 +4,18 @@
     generate: getPatches
   };
 
+  // Build incubator
+  var incubator = document.createElement('div')
+  incubator.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="145" height="153">' +
+      '<foreignObject width="100%" height="100%">' +
+        '<div xmlns="http://www.w3.org/1999/xhtml" style="width: 145px; height: 153px; display: flex; justify-content: center; align-items: center;">' +
+          '<div class="box" style="width: 100px; height: 100px;"></div>' +
+        '</div>' +
+      '</foreignObject>' +
+    '</svg>';
+
+  // Constants
   var WIDTH = 145,
       HEIGHT = 153,
       TOP = 52,
@@ -11,7 +23,7 @@
       BOTTOM = 60,
       LEFT = 30,
       REGION_DIMS = {
-        tl: [0, 0, LEFT, TOP],
+        tl: [0, 0, LEFT, TOP, 8, 25],
         t:  [LEFT, 0, WIDTH - LEFT - RIGHT, TOP],
         tr: [WIDTH - RIGHT, 0, RIGHT, TOP],
         r:  [WIDTH - RIGHT, TOP, RIGHT, HEIGHT - TOP - BOTTOM],
@@ -19,7 +31,7 @@
         b:  [LEFT, HEIGHT - BOTTOM, WIDTH - LEFT - RIGHT, BOTTOM],
         bl: [0, HEIGHT - BOTTOM, LEFT, BOTTOM],
         l:  [0, TOP, LEFT, HEIGHT - TOP - BOTTOM]
-      },
+      }
       SHADOW_STYLES = [
         '0 1.5px 2.5px 0 rgba(0, 0, 0, 0.24),   0 0.5px 3.5px 0 rgba(0, 0, 0, 0.16)',
         '0 2.5px 3.5px 0 rgba(0, 0, 0, 0.24),   0 1.0px 5px 0 rgba(0, 0, 0, 0.16)',
@@ -31,12 +43,11 @@
       SHADOW_NAMES = [
         '2dp', '3dp', '4dp', '6dp', '8dp', '16dp'
       ],
-      BOX = document.querySelector('.box'),
-      SVG = document.querySelector('svg');
+      BOX = incubator.querySelector('.box'),
+      SVG = incubator.querySelector('svg');
 
   function getPatches() {
     // Apply each of the classes in turn
-    console.log(Promise);
     return Promise.all(SHADOW_STYLES.map(generate9Patch));
   };
 
@@ -86,23 +97,35 @@
       // Extract the border, and produce a PNG data URI
       var borderImg = ctx.getImageData(dims[0], dims[1], dims[2], dims[3]);
       patchCtx.putImageData(borderImg, 0, 0);
-      patches[borderName] = patchCanvas.toDataURL('image/png');
+
+      patches[borderName].width = dims[2];
+      patches[borderName].height = dims[3];
+      patches[borderName].data = patchCanvas.toDataURL('image/png');
     });
 
-    patches.all = canvas.toDataURL('image/png');
     return patches;
   }
 
   function newPatches() {
     return {
-      tl: void 0,
-      t: void 0,
-      tr: void 0,
-      r: void 0,
-      br: void 0,
-      b: void 0,
-      bl: void 0,
-      l: void 0,
+      tl: newPatch(),
+      t: newPatch(),
+      tr: newPatch(),
+      r: newPatch(),
+      br: newPatch(),
+      b: newPatch(),
+      bl: newPatch(),
+      l: newPatch()
     };
+  }
+
+  function newPatch() {
+    return {
+      width: void 0,
+      height: void 0,
+      data: void 0,
+      xInset: void 0,
+      yInset: void 0
+    }
   }
 }(window);

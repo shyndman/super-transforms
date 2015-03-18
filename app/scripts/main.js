@@ -14,17 +14,15 @@
 
     var anim = new global.goog.TransformAnimationNode(frame)
         .scale(32)
-        .transformOrigin('18px', '18px')
-        .transition(500, 'cubic-bezier(0.4, 0.0, 1, 1)')
+        .transformOrigin('3px', '3px')
+        .transition(700, 'cubic-bezier(0.4, 0.0, 1, 1)')
         .translate(32, 32)
         .withBorderRegions(borderRegions, shadowLayer)
         .addChild(
           new global.goog.TransformAnimationNode(img)
             .scaleLocked(true)
-            .scale(0.75)
             .translate(-32, -32))
         .build();
-    console.log(anim);
     document.timeline.play(anim);
 
   });

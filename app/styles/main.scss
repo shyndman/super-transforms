@@ -4,16 +4,25 @@ html, body {
   padding: 0;
 }
 
-#frame {
+#container > * {
   position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#shadows {
+  z-index: 1;
+}
+
+#frame {
   width: 75px;
   height: 75px;
   overflow: hidden;
-
-  border-radius: 50%;
-  will-change: transform;
+  box-shadow: 0 7.5px 10px 1px rgba(0, 0, 0, 0.24),
+              0 2.5px 13.5px 2px rgba(0, 0, 0, 0.16);
   transform: translate(32px, 32px);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+  will-change: transform;
+  z-index: 2;
 }
 
 #frame img {
