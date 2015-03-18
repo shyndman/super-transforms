@@ -1,29 +1,69 @@
 !function(global) {
-
-  var borderRegions;
-  var frame = document.querySelector('#frame');
-  var shadowLayer = document.querySelector('#shadows');
-  var img = frame.querySelector('img');
+  var borderRegions,
+      frame = document.querySelector('#frame'),
+      frameBounds = frame.getBoundingClientRect(),
+      shadowLayer = document.querySelector('#shadows'),
+      canvas = document.querySelector('canvas'),
+      ctx = canvas.getContext('2d');
 
   global.goog.shadowPatches.generate().then(function(patches) {
     borderRegions = patches[4];
   });
 
-  frame.addEventListener('click', function() {
+  var p1, isMouseDown = false;
+
+  document.body.onmousedown = function(e) {
+    isMouseDown = true;
+    p1 = { x: e.offsetX, y: e.offsetY };
+  };
+
+  document.body.onmousemove = function(e) {
+    if (!isMouseDown) {
+      return;
+    }
+
+    var cur = { x: e.offsetX, y: e.offsetY };
+    var rect = extractRect(p1, cur);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+    ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+    ctx.restore();
+  };
+
+  document.body.onmouseup = function(e) {
+    isMouseDown = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    run(extractRect(p1, { x: e.offsetX, y: e.offsetY }));
+  };
+
+  var anim, player;
+
+  function run(rect) {
+    shadowLayer.innerHTML = '';
     frame.style.boxShadow = 'none';
 
-    var anim = new global.goog.TransformAnimationNode(frame)
-        .scale(32)
-        .transformOrigin('3px', '3px')
-        .transition(700, 'cubic-bezier(0.4, 0.0, 1, 1)')
-        .translate(32, 32)
-        .withBorderRegions(borderRegions, shadowLayer)
-        .addChild(
-          new global.goog.TransformAnimationNode(img)
-            .scaleLocked(true)
-            .translate(-32, -32))
-        .build();
-    document.timeline.play(anim);
+    var scaleX = rect.width / frameBounds.width,
+        scaleY = rect.height / frameBounds.height
 
-  });
+    anim = new global.goog.TransformAnimationNode(frame)
+        .translate(rect.left, rect.top)
+        .scale(scaleX, scaleY)
+        .transition(500, 'cubic-bezier(0.4, 0.0, 1, 1)')
+        .withBorderRegions(borderRegions, shadowLayer)
+        .build();
+    player = document.timeline.play(anim);
+  }
+
+  function extractRect(p1, p2) {
+    return {
+      left: Math.min(p1.x, p2.x),
+      top: Math.min(p1.y, p2.y),
+      width: Math.max(Math.abs(p1.x - p2.x), 75),
+      height: Math.max(Math.abs(p1.y - p2.y), 75)
+    };
+  }
 }(window);

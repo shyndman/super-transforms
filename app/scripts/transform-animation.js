@@ -52,7 +52,6 @@
 
     transformOrigin: function(x, y) {
       var to = x + ' ' + y;
-      this._element.style.transformOrigin = to;
       this._transformOrigin = to;
       return this;
     },
@@ -116,20 +115,24 @@
     },
 
     _prepareToRun: function() {
-      this._transformFrom = this._transformToComponents(
-          window.getComputedStyle(this._element).transform);
+      var style = window.getComputedStyle(this._element);
+      this._transformFrom = this._transformToComponents(style.transform);
 
-      // Fill in missing properties of to
+      // Fill in missing destination properties based on the source properties
       for (var key in this._transformFrom) {
         if (this._transformTo[key] === undefined) {
           this._transformTo[key] = this._transformFrom[key];
         }
       }
 
+      // Set the transform origin
       if ((this._scaleLocked || this._translationLocked) && this._parent) {
         this._element.style.transformOrigin = this._parent._transformOrigin;
+      } else {
+        this._element.style.transformOrigin = this._transformOrigin || style.transformOrigin;
       }
 
+      // Prepare the children
       if (this._children) {
         this._children.forEach(function(c) {
           c._prepareToRun();
@@ -216,7 +219,16 @@
         return;
       }
 
+      // var comps = this._transformToComponents(this._element.style.transform);
       var bounds = this._element.getBoundingClientRect();
+      console.log(bounds, this._element.offsetParent.offsetLeft);
+      bounds = {
+        left: bounds.left - this._element.offsetParent.offsetLeft,
+        right: bounds.right - this._element.offsetParent.offsetLeft,
+        top: bounds.top - this._element.offsetParent.offsetTop,
+        bottom: bounds.bottom - this._element.offsetParent.offsetTop
+      };
+
       var translate, scale;
 
       // TODO(shyndman): Make this data driven
@@ -235,21 +247,22 @@
             break;
 
           case 'tr':
-            translate = (bounds.right - 8) + 'px, ' + (bounds.top - 52 + 25) + 'px';
+            translate = (bounds.right - 10) + 'px, ' + (bounds.top - 52 + 25) + 'px';
             break;
 
           case 'r':
-            translate = (bounds.right - 8) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
+            translate = (bounds.right - 10) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
             scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
             break;
 
           case 'br':
-            translate = (bounds.right - 8) + 'px, ' + (bounds.bottom - 34) + 'px';
+            translate = (bounds.right - 10) + 'px, ' + (bounds.bottom - 34) + 'px';
             break;
 
           case 'b':
             translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.bottom - 34) + 'px';
-            scale = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width + ',1';
+            var scaleY = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width;
+            scale = scaleY + ',1';
             break;
 
           case 'bl':
@@ -263,6 +276,7 @@
 
           default:
             translate = '0,0';
+            break;
         }
 
         ele.style.display = '';
@@ -339,9 +353,67 @@
         m12: row0y,
         m21: row1x,
         m22: row1y
-      };
+     };
+    },
+
+    rematrix: function(comps) {
+      var matrix = this.newIdentityMatrix4();
+
+      matrix[0][0] = comps.m11;
+      matrix[0][1] = comps.m12;
+      matrix[1][0] = comps.m21;
+      matrix[1][1] = comps.m22;
+
+      // Translate matrix.
+      matrix[3][0] = comps.translateX * comps.m11 + comps.translateY * comps.m21;
+      matrix[3][1] = comps.translateX * comps.m12 + comps.translateY * comps.m22;
+
+      // Rotate matrix.
+      var angle = this.deg2rad(this.angle);
+      var cosAngle = Math.cos(angle);
+      var sinAngle = Math.sin(angle);
+
+      // New temporary, identity initialized, 4x4 matrix rotateMatrix
+      var rotateMatrix = this.newIdentityMatrix4();
+      rotateMatrix[0][0] = cosAngle;
+      rotateMatrix[0][1] = sinAngle;
+      rotateMatrix[1][0] = -sinAngle;
+      rotateMatrix[1][1] = cosAngle;
+
+      matrix = this.matrixMultiply(matrix, rotateMatrix);
+
+      // Scale matrix
+      matrix[0][0] *= scale[0]
+      matrix[0][1] *= scale[0]
+      matrix[1][0] *= scale[1]
+      matrix[1][1] *= scale[1]
+
+      return matrix;
+    },
+
+    newIdentityMatrix4: function() {
+      return [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ];
+    },
+
+    matrixMultiply: function(m1, m2) {
+      var result = [];
+      for (var i = 0; i < m1.length; i++) {
+        result[i] = [];
+        for (var j = 0; j < m2[0].length; j++) {
+          var sum = 0;
+          for (var k = 0; k < m1[0].length; k++) {
+            sum += m1[i][k] * m2[k][j];
+          }
+          result[i][j] = sum;
+        }
+      }
+      return result;
     }
   };
-
 
 }(window);
