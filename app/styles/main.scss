@@ -6,26 +6,21 @@ html, body {
 
 #frame {
   position: absolute;
-  width: 150px;
-  height: 150px;
+  width: 75px;
+  height: 75px;
   overflow: hidden;
-  transform-origin: 24px 24px;
-  -webkit-transform-origin: 24px 24px;
-  transform: scale(0.5);
-  -webkit-transform: scale(0.5);
+
   border-radius: 50%;
   will-change: transform;
+  transform: translate(32px, 32px);
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
 }
 
 #frame img {
   position: absolute;
   height: auto;
-  transform-origin: 24px 24px;
-  -webkit-transform-origin: 24px 24px;
+  transform: translate(-32px, -32px);
   will-change: transform;
-  transform: scale(2);
-  -webkit-transform: scale(2);
 }
 
 @media (orientation: landscape) {

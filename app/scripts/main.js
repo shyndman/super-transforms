@@ -1,26 +1,31 @@
 !function(global) {
+
+  var borderRegions;
   var frame = document.querySelector('#frame');
-  frame.addEventListener('click', function() {
-    frame.style.boxShadow = 'none';
-    var anim = new Animation(frame, test, {
-      easing: 'cubic-bezier(0.4, 0.0, 1, 1)',
-      duration: 500
-    });
-    document.timeline.play(anim);
+  var shadowLayer = document.querySelector('#shadows');
+  var img = frame.querySelector('img');
+
+  global.goog.shadowPatches.generate().then(function(patches) {
+    borderRegions = patches[4];
   });
 
-  var frameFrom = 0.5, frameTo = 16,
-      imgFrom = 0, imgTo = 0,
-      img = document.querySelector('img');
+  frame.addEventListener('click', function() {
+    frame.style.boxShadow = 'none';
 
-  function test(t, ele, anim) {
-    if (t == null) t = 1;
+    var anim = new global.goog.TransformAnimationNode(frame)
+        .scale(32)
+        .transformOrigin('18px', '18px')
+        .transition(500, 'cubic-bezier(0.4, 0.0, 1, 1)')
+        .translate(32, 32)
+        .withBorderRegions(borderRegions, shadowLayer)
+        .addChild(
+          new global.goog.TransformAnimationNode(img)
+            .scaleLocked(true)
+            .scale(0.75)
+            .translate(-32, -32))
+        .build();
+    console.log(anim);
+    document.timeline.play(anim);
 
-    var frameScale = t * (frameTo - frameFrom) + frameFrom;
-    var imgY = t * (imgTo - imgFrom) + imgFrom;
-
-    ele.style.transform = ele.style.webkitTransform = 'scale(' + frameScale + ') translateZ(0)';
-    img.style.transform = img.style.webkitTransform =
-      'scale(' + (1 / frameScale) + ') translateY(' + imgY + 'px) translateX(' + imgY + 'px) translateZ(0)';
-  }
+  });
 }(window);
