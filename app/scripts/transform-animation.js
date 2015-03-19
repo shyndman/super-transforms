@@ -19,9 +19,18 @@
     this._parent = void 0;
     this._children = void 0;
     this._borderRegions = void 0;
+    this._borderPositions = void 0;
     this._borderElements = void 0;
     this._borderContainer = void 0;
     this._update = this._update.bind(this);
+
+    var style = window.getComputedStyle(element);
+    this._elementRect = {
+      left: style.offsetLeft,
+      top: style.offsetTop,
+      width: style.width,
+      height: style.height
+    };
   }
 
   TransformAnimationNode.prototype = {
@@ -77,6 +86,7 @@
     withBorderRegions: function(regions, borderContainer) {
       this._borderRegions = regions;
       this._borderContainer = borderContainer;
+      this._borderPositions = regions.position(this._elementRect);
       this._borderElements = {};
 
       // TODO(shyndman): Clean up any previously built images
@@ -219,69 +229,9 @@
         return;
       }
 
-      // var comps = this._transformToComponents(this._element.style.transform);
-      var bounds = this._element.getBoundingClientRect();
-      console.log(bounds, this._element.offsetParent.offsetLeft);
-      bounds = {
-        left: bounds.left - this._element.offsetParent.offsetLeft,
-        right: bounds.right - this._element.offsetParent.offsetLeft,
-        top: bounds.top - this._element.offsetParent.offsetTop,
-        bottom: bounds.bottom - this._element.offsetParent.offsetTop
-      };
-
-      var translate, scale;
-
-      // TODO(shyndman): Make this data driven
-      for (var regionName in this._borderElements) {
-        var ele = this._borderElements[regionName];
-        var region = this._borderRegions[regionName];
-        var scale = '1,1';
-        switch (regionName) {
-          case 'tl':
-            translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-            break;
-
-          case 't':
-            translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-            scale = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width + ',1';
-            break;
-
-          case 'tr':
-            translate = (bounds.right - 10) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-            break;
-
-          case 'r':
-            translate = (bounds.right - 10) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
-            scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
-            break;
-
-          case 'br':
-            translate = (bounds.right - 10) + 'px, ' + (bounds.bottom - 34) + 'px';
-            break;
-
-          case 'b':
-            translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.bottom - 34) + 'px';
-            var scaleY = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width;
-            scale = scaleY + ',1';
-            break;
-
-          case 'bl':
-            translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.bottom - 34) + 'px';
-            break;
-
-          case 'l':
-            translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
-            scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
-            break;
-
-          default:
-            translate = '0,0';
-            break;
-        }
-
-        ele.style.display = '';
-        ele.style.transform = 'translate(' + translate + ') scale(' + scale + ')';
-      }
+      var comps = this._transformToComponents(
+        window.getComputedStyle(this._element).transform);
+      console.log(comps);
     }
   };
 
@@ -321,7 +271,6 @@
         row1y *= 1 / scaleY;
       }
 
-      // Compute rotation
       // Compute rotation and renormalize matrix.
       var angle = Math.atan2(row0y, row0x);
       if (angle) {

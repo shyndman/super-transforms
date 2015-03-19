@@ -31,7 +31,20 @@
         b:  [LEFT, HEIGHT - BOTTOM, WIDTH - LEFT - RIGHT, BOTTOM],
         bl: [0, HEIGHT - BOTTOM, LEFT, BOTTOM],
         l:  [0, TOP, LEFT, HEIGHT - TOP - BOTTOM]
-      }
+      },
+      // TODO(shyndman): These should be determined programmatically. One
+      // possibility is to use a red background on the rect, and scan inwards
+      // on each of the corner regions.
+      REGION_INSETS = {
+        tl: [7, 25],
+        t:  [0, 25],
+        tr: [8, 25],
+        r:  [8, 0],
+        br: [8, 34],
+        b:  [0, 34],
+        bl: [7, 34],
+        l:  [7, 0]
+      },
       SHADOW_STYLES = [
         '0 1.5px 2.5px 0 rgba(0, 0, 0, 0.24),   0 0.5px 3.5px 0 rgba(0, 0, 0, 0.16)',
         '0 2.5px 3.5px 0 rgba(0, 0, 0, 0.24),   0 1.0px 5px 0 rgba(0, 0, 0, 0.16)',
@@ -84,13 +97,14 @@
   }
 
   function extractRegions(canvas, ctx) {
-    var patches = newPatches(),
+    var regions = new BorderRegions(),
         patchCanvas = document.createElement('canvas'),
         patchCtx = patchCanvas.getContext('2d');
 
-    Object.keys(patches).forEach(function(borderName) {
+    Object.keys(regions).forEach(function(regionName) {
       // Size the patch canvas to match the border size
-      var dims = REGION_DIMS[borderName];
+      var dims = REGION_DIMS[regionName],
+          insets = REGION_INSETS[regionName];
       patchCanvas.width = dims[2];
       patchCanvas.height = dims[3];
 
@@ -98,34 +112,85 @@
       var borderImg = ctx.getImageData(dims[0], dims[1], dims[2], dims[3]);
       patchCtx.putImageData(borderImg, 0, 0);
 
-      patches[borderName].width = dims[2];
-      patches[borderName].height = dims[3];
-      patches[borderName].data = patchCanvas.toDataURL('image/png');
+      regions[regionName].width = dims[2];
+      regions[regionName].height = dims[3];
+      regions[regionName].xInset = insets[0];
+      regions[regionName].xInset = insets[1];
+      regions[regionName].data = patchCanvas.toDataURL('image/png');
     });
 
     return patches;
   }
 
-  function newPatches() {
-    return {
-      tl: newPatch(),
-      t: newPatch(),
-      tr: newPatch(),
-      r: newPatch(),
-      br: newPatch(),
-      b: newPatch(),
-      bl: newPatch(),
-      l: newPatch()
-    };
+  function newRegions() {
+    return new BorderRegions();
   }
 
-  function newPatch() {
-    return {
-      width: void 0,
-      height: void 0,
-      data: void 0,
-      xInset: void 0,
-      yInset: void 0
-    }
+  function BorderRegions() {
+    this.tl = this._newRegion();
+    this.t = this._newRegion();
+    this.tr = this._newRegion();
+    this.r = this._newRegion();
+    this.br = this._newRegion();
+    this.b = this._newRegion();
+    this.bl = this._newRegion();
+    this.l = this._newRegion();
   }
+
+  BorderRegions.prototype = {
+    _newRegion: function() {
+      return {
+        width: void 0,
+        height: void 0,
+        data: void 0,
+        xInset: void 0,
+        yInset: void 0
+      }
+    },
+
+    position: function(rect) {
+      // switch (regionName) {
+      //   case 'tl':
+      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top - 52 + 25) + 'px';
+      //     break;
+
+      //   case 't':
+      //     translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.top - 52 + 25) + 'px';
+      //     scale = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width + ',1';
+      //     break;
+
+      //   case 'tr':
+      //     translate = (bounds.right - 10) + 'px, ' + (bounds.top - 52 + 25) + 'px';
+      //     break;
+
+      //   case 'r':
+      //     translate = (bounds.right - 10) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
+      //     scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
+      //     break;
+
+      //   case 'br':
+      //     translate = (bounds.right - 10) + 'px, ' + (bounds.bottom - 34) + 'px';
+      //     break;
+
+      //   case 'b':
+      //     translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.bottom - 34) + 'px';
+      //     var scaleY = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width;
+      //     scale = scaleY + ',1';
+      //     break;
+
+      //   case 'bl':
+      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.bottom - 34) + 'px';
+      //     break;
+
+      //   case 'l':
+      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
+      //     scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
+      //     break;
+
+      //   default:
+      //     translate = '0,0';
+      //     break;
+      // }
+    }
+  };
 }(window);

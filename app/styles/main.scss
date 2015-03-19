@@ -15,9 +15,6 @@ body {
 #container {
   width: 1200px;
   height: 600px;
-}
-
-#container {
   position: relative;
   border: 1px solid #eee;
 }
@@ -32,6 +29,10 @@ body {
 
 #shadows {
   z-index: 1;
+}
+
+canvas {
+  z-index: 2;
 }
 
 #frame {
@@ -53,6 +54,20 @@ body {
   height: auto;
   transform: translate(-32px, -32px);
   will-change: transform;
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fade-out 400ms cubic-bezier(0.4, 0.0, 1, 1) forwards;
 }
 
 @media (orientation: landscape) {

@@ -7,12 +7,15 @@
       ctx = canvas.getContext('2d');
 
   global.goog.shadowPatches.generate().then(function(patches) {
+    canvas.style.opacity = 1;
     borderRegions = patches[4];
   });
 
   var p1, isMouseDown = false;
 
   document.body.onmousedown = function(e) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.classList.remove('fade-out');
     isMouseDown = true;
     p1 = { x: e.offsetX, y: e.offsetY };
   };
@@ -35,8 +38,8 @@
   };
 
   document.body.onmouseup = function(e) {
+    canvas.classList.add('fade-out');
     isMouseDown = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     run(extractRect(p1, { x: e.offsetX, y: e.offsetY }));
   };
 
