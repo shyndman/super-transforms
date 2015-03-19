@@ -1,3 +1,6 @@
+$width: 1200px;
+$height: 600px;
+
 html, body {
   overflow: hidden;
   margin: 0;
@@ -7,14 +10,15 @@ html, body {
 }
 
 body {
+  font-family: RobotoDraft;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 #container {
-  width: 1200px;
-  height: 600px;
+  width: $width;
+  height: $height;
   position: relative;
   border: 1px solid #eee;
   cursor: crosshair;
@@ -26,6 +30,14 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
+}
+
+#controls {
+  position: fixed;
+  bottom: 0;
+  left: calc((100vw - 1200px) / 2);
+  bottom: calc((100vh - 600px) / 2 - 30px);
+  -webkit-user-select: none;
 }
 
 #shadows {
@@ -52,8 +64,11 @@ canvas {
 #frame .background {
   position: absolute;
   height: auto;
-  transform: translate(-32px, -32px);
+  width: $width;
+  height: $height;
+  transform-origin: 0 0;
   will-change: transform;
+  background: url(/images/background.jpg) 0 / cover no-repeat;
 }
 
 @keyframes fade-out {

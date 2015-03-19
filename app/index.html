@@ -11,6 +11,7 @@
     <!-- bower:css -->
     <!-- endbower -->
     <!-- endbuild -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700">
 
     <!-- build:css styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
@@ -18,9 +19,16 @@
   </head>
   <body>
     <div id="container">
-      <div id="frame"></div>
+      <div id="frame">
+        <div class="background"></div>
+      </div>
       <div id="shadows"></div>
       <canvas width="1200" height="600"></canvas>
+    </div>
+    <div id="controls">
+      <label>
+        <input id="has-background" type="checkbox"> with background
+      </label>
     </div>
 
     <!-- build:js scripts/vendor.js -->
