@@ -68,7 +68,7 @@ canvas {
   height: $height;
   transform-origin: 0 0;
   will-change: transform;
-  background: url(/images/background.jpg) 0 / cover no-repeat;
+  background: url(../images/background.png) 0 / cover no-repeat;
 }
 
 @keyframes fade-out {

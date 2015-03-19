@@ -7,7 +7,8 @@
       shadowLayer = document.querySelector('#shadows'),
       canvas = document.querySelector('canvas'),
       ctx = canvas.getContext('2d'),
-      backgroundCheck = document.querySelector('#has-background');
+      backgroundCheck = document.querySelector('#has-background'),
+      translationLockCheck = document.querySelector('#translation-lock');
 
   global.goog.shadowPatches.generate().then(function(patches) {
     canvas.style.opacity = 1;
@@ -77,7 +78,8 @@
       node.addChild(
         new global.goog.TransformAnimationNode(background)
           .scaleLocked(true)
-          .translationLocked(true))
+          .translationLocked(translationLockCheck.checked)
+          )
     }
 
     anim = node.build();

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Super Transforms</title>
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- endbuild -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700">
+
+    <!-- build:css styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+
+    <style>
+      li {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+      </ul>
+      <div id="shadows"></div>
+      <canvas width="1200" height="600"></canvas>
+    </div>
+    <div id="controls">
+      <label>
+        <input id="has-background" type="checkbox"> with background
+      </label>
+    </div>
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js scripts/main.js -->
+    <script src="scripts/web-animations-next.min.js"></script>
+    <script src="scripts/shadow-patches.js"></script>
+    <script src="scripts/transform-animation.js"></script>
+    <script src="scripts/shadow-groups.js"></script>
+    <!-- endbuild -->
+</body>
+</html>
