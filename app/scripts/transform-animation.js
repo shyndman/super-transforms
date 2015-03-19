@@ -19,17 +19,25 @@
     this._parent = void 0;
     this._children = void 0;
     this._borderRegions = void 0;
-    this._borderPositions = void 0;
     this._borderElements = void 0;
     this._borderContainer = void 0;
     this._update = this._update.bind(this);
 
+    // TODO(shyndman): Refactor required
     var style = window.getComputedStyle(element);
     this._elementRect = {
-      left: style.offsetLeft,
-      top: style.offsetTop,
-      width: style.width,
-      height: style.height
+      left: element.offsetLeft,
+      right: element.offsetLeft + parseInt(style.width, 10),
+      top: element.offsetTop,
+      bottom: element.offsetTop + parseInt(style.height, 10),
+      get corners() {
+        return {
+          tl: { x: this.left, y: this.top },
+          tr: { x: this.right, y: this.top },
+          br: { x: this.right, y: this.bottom },
+          bl: { x: this.left, y: this.bottom }
+        }
+      }
     };
   }
 
@@ -86,7 +94,6 @@
     withBorderRegions: function(regions, borderContainer) {
       this._borderRegions = regions;
       this._borderContainer = borderContainer;
-      this._borderPositions = regions.position(this._elementRect);
       this._borderElements = {};
 
       // TODO(shyndman): Clean up any previously built images
@@ -129,11 +136,7 @@
       this._transformFrom = this._transformToComponents(style.transform);
 
       // Fill in missing destination properties based on the source properties
-      for (var key in this._transformFrom) {
-        if (this._transformTo[key] === undefined) {
-          this._transformTo[key] = this._transformFrom[key];
-        }
-      }
+      setDefaults(this._transformTo, this._transformFrom);
 
       // Set the transform origin
       if ((this._scaleLocked || this._translationLocked) && this._parent) {
@@ -150,7 +153,7 @@
       }
     },
 
-    _transformToComponents: function(transform) {
+    _transformToMatrix: function(transform) {
       var float = '(-?\\d+(\\.\\d+)?)';
       var sep = ',\\s*';
       var pattern = new RegExp(
@@ -166,10 +169,22 @@
       var row0y = parseFloat(matches[3]);
       var row1x = parseFloat(matches[5]);
       var row1y = parseFloat(matches[7]);
-      var tx = parseFloat(matches[9]);
-      var ty = parseFloat(matches[11]);
+      var tx = parseInt(matches[9]);
+      var ty = parseInt(matches[11]);
 
-      return global.goog.math.unmatrix(row0x, row0y, row1x, row1y, tx, ty);
+      return [
+        [row0x, row0y, tx],
+        [row1x, row1y, ty],
+        [0, 0, 1]
+      ];
+    },
+
+    _transformToComponents: function(transform) {
+      var matrix = this._transformToMatrix(transform);
+      return global.goog.math.unmatrix(
+        matrix[0][0], matrix[0][1],
+        matrix[1][0], matrix[1][1],
+        matrix[0][2], matrix[1][2]);
     },
 
     _componentsToTransform: function(comps) {
@@ -181,6 +196,7 @@
         translate, scale, rotation
       ];
 
+      // Apply transforms that counter the parent's
       if (this._translationLocked) {
         var invTranslateX = -parentTransform.translateX;
         var invTranslateY = -parentTransform.translateY;
@@ -193,7 +209,8 @@
         functions.unshift('scale(' + normScaleX + ', ' + normScaleY + ')');
       }
 
-      functions.push('translateZ(0)'); // for Safari
+      // Give Safari what it needs
+      functions.push('translateZ(0)');
 
       return functions.join(' ');
     },
@@ -229,9 +246,49 @@
         return;
       }
 
-      var comps = this._transformToComponents(
+      var matrix = this._transformToMatrix(
         window.getComputedStyle(this._element).transform);
-      console.log(comps);
+      var corners = this._elementRect.corners;
+      var transformedCorners = Object.keys(corners).reduce(
+        function(acc, cornerName) {
+          var corner = corners[cornerName];
+          var cornerMatrix = goog.math.newPointMatrix3(corner.x, corner.y);
+          cornerMatrix = goog.math.matrixMultiply(matrix, cornerMatrix);
+          acc[cornerName] = {
+            x: cornerMatrix[0][0],
+            y: cornerMatrix[1][0]
+          };
+          return acc;
+        }, {});
+
+      var regionPositions = this._borderRegions.getRegionPositions(transformedCorners);
+      Object.keys(regionPositions).forEach(function(regionName) {
+        var region = this._borderRegions[regionName];
+        var element = this._borderElements[regionName];
+        var transform =
+          'translate(' +
+            regionPositions[regionName].x + 'px, ' +
+            regionPositions[regionName].y + 'px) ';
+
+        switch (regionName) {
+          case 't':
+          case 'b':
+            var scale = (regionPositions.tr.x - regionPositions.t.x) / region.width;
+            scale *= 0.9935; // HACK(shyndman): fudge for Chrome
+            transform += 'scaleX(' + scale + ')'
+            break;
+
+          case 'l':
+          case 'r':
+            var scale = (regionPositions.bl.y - regionPositions.l.y) / region.height;
+            scale *= 0.997; // HACK(shyndman): fudge for Chrome
+            transform += 'scaleY(' + scale + ')';
+            break;
+        }
+
+        element.style.transform = transform;
+        element.style.display = '';
+      }, this);
     }
   };
 
@@ -349,6 +406,14 @@
       ];
     },
 
+    newPointMatrix3: function(x, y) {
+      return [
+        [x],
+        [y],
+        [1]
+      ];
+    },
+
     matrixMultiply: function(m1, m2) {
       var result = [];
       for (var i = 0; i < m1.length; i++) {
@@ -364,5 +429,21 @@
       return result;
     }
   };
+
+  function extend(target, source) {
+    for (var key in source) {
+      target[key] = source[key];
+    }
+    return target;
+  }
+
+  function setDefaults(target, defaults) {
+    for (var key in defaults) {
+      if (target[key] === undefined) {
+        target[key] = defaults[key];
+      }
+    }
+    return target;
+  }
 
 }(window);

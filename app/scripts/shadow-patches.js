@@ -22,6 +22,7 @@
       RIGHT = 30,
       BOTTOM = 60,
       LEFT = 30,
+      // TODO(shyndman): These values ideally would be provided from the outside
       REGION_DIMS = {
         tl: [0, 0, LEFT, TOP, 8, 25],
         t:  [LEFT, 0, WIDTH - LEFT - RIGHT, TOP],
@@ -45,6 +46,9 @@
         bl: [7, 34],
         l:  [7, 0]
       },
+      // TODO(shyndman): These should be externally provided as well, to the
+      // generate call. Probably better event to have arbitrary styling properties
+      // supplied (except for some that we'll need).
       SHADOW_STYLES = [
         '0 1.5px 2.5px 0 rgba(0, 0, 0, 0.24),   0 0.5px 3.5px 0 rgba(0, 0, 0, 0.16)',
         '0 2.5px 3.5px 0 rgba(0, 0, 0, 0.24),   0 1.0px 5px 0 rgba(0, 0, 0, 0.16)',
@@ -53,37 +57,33 @@
         '0 7.5px 10px 1px rgba(0, 0, 0, 0.24),  0 2.5px 13.5px 2px rgba(0, 0, 0, 0.16)',
         '0 14.0px 20px 1px rgba(0, 0, 0, 0.24), 0 5.5px 26px 5px rgba(0, 0, 0, 0.16)'
       ],
-      SHADOW_NAMES = [
-        '2dp', '3dp', '4dp', '6dp', '8dp', '16dp'
-      ],
       BOX = incubator.querySelector('.box'),
       SVG = incubator.querySelector('svg');
 
   function getPatches() {
     // Apply each of the classes in turn
-    return Promise.all(SHADOW_STYLES.map(generate9Patch));
+    return Promise.all(SHADOW_STYLES.map(generateRegions));
   };
 
   /**
    * Returns a promise that will resolve to the shadow 9-patch for the specified
    * shadow class.
    */
-  function generate9Patch(shadowStyle) {
+  function generateRegions(shadowStyle) {
     BOX.style.boxShadow = shadowStyle;
     console.time(shadowStyle);
-    return beginPatchExtraction().then(function(p) {
+    return beginRegionExtraction().then(function(p) {
       console.timeEnd(shadowStyle);
       return p;
     });
   }
 
-  function beginPatchExtraction() {
+  function beginRegionExtraction() {
     var canvas = document.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         img = new Image(),
         url = 'data:image/svg+xml;charset=utf8,' + SVG.outerHTML;
 
-    img.crossOrigin
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
 
@@ -114,12 +114,12 @@
 
       regions[regionName].width = dims[2];
       regions[regionName].height = dims[3];
-      regions[regionName].xInset = insets[0];
-      regions[regionName].xInset = insets[1];
+      regions[regionName].insetX = insets[0];
+      regions[regionName].insetY = insets[1];
       regions[regionName].data = patchCanvas.toDataURL('image/png');
     });
 
-    return patches;
+    return regions;
   }
 
   function newRegions() {
@@ -143,54 +143,50 @@
         width: void 0,
         height: void 0,
         data: void 0,
-        xInset: void 0,
-        yInset: void 0
+        insetX: void 0,
+        insetY: void 0
       }
     },
 
-    position: function(rect) {
-      // switch (regionName) {
-      //   case 'tl':
-      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-      //     break;
+    getRegionPositions: function(corners) {
+      var self = this; // why the eff doesn't reduce support a thisArg?
+      return Object.keys(this).reduce(function(acc, regionName) {
+        var region = self[regionName];
+        var specificRegionName = regionName.length == 1 ? regionName + 'c' : regionName;
+        var point = { x: void 0, y: void 0 };
 
-      //   case 't':
-      //     translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-      //     scale = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width + ',1';
-      //     break;
+        for (var i = 0; i < 2; i++) {
+          switch (specificRegionName[i]) {
+            case 't':
+              point.y = corners.tl.y - region.height + region.insetY;
+              break;
 
-      //   case 'tr':
-      //     translate = (bounds.right - 10) + 'px, ' + (bounds.top - 52 + 25) + 'px';
-      //     break;
+            case 'r':
+              point.x = corners.tr.x - region.insetX;
+              break;
 
-      //   case 'r':
-      //     translate = (bounds.right - 10) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
-      //     scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
-      //     break;
+            case 'b':
+              point.y = corners.bl.y - region.insetY;
+              break;
 
-      //   case 'br':
-      //     translate = (bounds.right - 10) + 'px, ' + (bounds.bottom - 34) + 'px';
-      //     break;
+            case 'l':
+              point.x = corners.tl.x - region.width + region.insetX;
+              break;
 
-      //   case 'b':
-      //     translate = (bounds.left + 30 - 8 - 14) + 'px, ' + (bounds.bottom - 34) + 'px';
-      //     var scaleY = ((bounds.right - 8) - ((bounds.left + 30 - 8 - 14))) / region.width;
-      //     scale = scaleY + ',1';
-      //     break;
+            case 'c':
+              point.x = point.x === undefined ?
+                corners.tl.x + self['l'].insetX :
+                point.x;
+              point.y = point.y === undefined ?
+                corners.tl.y + self['t'].insetY :
+                point.y;
+              break;
+          }
+        }
 
-      //   case 'bl':
-      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.bottom - 34) + 'px';
-      //     break;
-
-      //   case 'l':
-      //     translate = (bounds.left - 30 + 8) + 'px, ' + (bounds.top + 52 - 25 - 2) + 'px';
-      //     scale = '1,' + (((bounds.bottom - 34) - (bounds.top + 52 - 25 - 2)) / region.height);
-      //     break;
-
-      //   default:
-      //     translate = '0,0';
-      //     break;
-      // }
+        acc[regionName] = point;
+        return acc;
+      }, {}, this);
     }
   };
 }(window);

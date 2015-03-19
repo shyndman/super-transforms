@@ -8,7 +8,7 @@
 
   global.goog.shadowPatches.generate().then(function(patches) {
     canvas.style.opacity = 1;
-    borderRegions = patches[4];
+    borderRegions = patches[3];
   });
 
   var p1, isMouseDown = false;
@@ -17,7 +17,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.classList.remove('fade-out');
     isMouseDown = true;
-    p1 = { x: e.offsetX, y: e.offsetY };
+    p1 = getEventPoint(e);
   };
 
   document.body.onmousemove = function(e) {
@@ -25,7 +25,7 @@
       return;
     }
 
-    var cur = { x: e.offsetX, y: e.offsetY };
+    var cur = getEventPoint(e);
     var rect = extractRect(p1, cur);
 
     ctx.save();
@@ -40,8 +40,13 @@
   document.body.onmouseup = function(e) {
     canvas.classList.add('fade-out');
     isMouseDown = false;
-    run(extractRect(p1, { x: e.offsetX, y: e.offsetY }));
+    run(extractRect(p1, getEventPoint(e)));
   };
+
+  function getEventPoint(e) {
+    var bounds = e.target.offsetParent.getBoundingClientRect();
+    return { x: e.pageX - bounds.left, y: e.pageY - bounds.top };
+  }
 
   var anim, player;
 
