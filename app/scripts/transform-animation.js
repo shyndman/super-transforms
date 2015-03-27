@@ -4,7 +4,13 @@
 
   function TransformAnimationNode(element) {
     this._element = element;
-    this._transformFrom = void 0;
+    this._transformFrom = {
+      translateX: void 0,
+      translateY: void 0,
+      scaleX: void 0,
+      scaleY: void 0,
+      rotation: void 0
+    };
     this._transformTo = {
       translateX: void 0,
       translateY: void 0,
@@ -68,18 +74,31 @@
     },
 
     transformOrigin: function(x, y) {
-      var to = x + ' ' + y;
+      // TODO(shyndman): Support units other than pixels
+      var to = x + 'px ' + y + 'px';
       this._transformOrigin = to;
       return this;
     },
 
-    translate: function(x, y) {
+    translateFrom: function(x, y) {
+      this._transformFrom.translateX = x;
+      this._transformFrom.translateY = y;
+      return this;
+    },
+
+    translateTo: function(x, y) {
       this._transformTo.translateX = x;
       this._transformTo.translateY = y;
       return this;
     },
 
-    scale: function(x, y) {
+    scaleFrom: function(x, y) {
+      this._transformFrom.scaleX = x;
+      this._transformFrom.scaleY = y;
+      return this;
+    },
+
+    scaleTo: function(x, y) {
       this._transformTo.scaleX = x;
       this._transformTo.scaleY = y || x;
       return this;
@@ -133,8 +152,8 @@
 
     _prepareToRun: function() {
       var style = window.getComputedStyle(this._element);
-      this._transformFrom = this._transformToComponents(style.transform);
-
+      // Fill in missing source properties based on the element's current state
+      setDefaults(this._transformFrom, this._transformToComponents(style.transform));
       // Fill in missing destination properties based on the source properties
       setDefaults(this._transformTo, this._transformFrom);
 
@@ -154,6 +173,10 @@
     },
 
     _transformToMatrix: function(transform) {
+      if (transform == 'none') {
+        return goog.math.newIdentityMatrix3();
+      }
+
       var float = '(-?\\d+(\\.\\d+)?)';
       var sep = ',\\s*';
       var pattern = new RegExp(
@@ -219,11 +242,11 @@
       if (time == null) time = 1;
 
       this._transformCurrent = {
-        translateX: interp(this._transformFrom.translateX, this._transformTo.translateX),
-        translateY: interp(this._transformFrom.translateY, this._transformTo.translateY),
-        scaleX: interp(this._transformFrom.scaleX, this._transformTo.scaleX),
-        scaleY: interp(this._transformFrom.scaleY, this._transformTo.scaleY),
-        rotation: interp(this._transformFrom.rotation, this._transformTo.rotation)
+        translateX: lerp(this._transformFrom.translateX, this._transformTo.translateX),
+        translateY: lerp(this._transformFrom.translateY, this._transformTo.translateY),
+        scaleX: lerp(this._transformFrom.scaleX, this._transformTo.scaleX),
+        scaleY: lerp(this._transformFrom.scaleY, this._transformTo.scaleY),
+        rotation: lerp(this._transformFrom.rotation, this._transformTo.rotation)
       };
 
       this._element.style.transform =
@@ -236,7 +259,7 @@
         });
       }
 
-      function interp(from, to) {
+      function lerp(from, to) {
         return time * (to - from) + from;
       }
     },
@@ -274,14 +297,14 @@
           case 't':
           case 'b':
             var scale = (regionPositions.tr.x - regionPositions.t.x) / region.width;
-            scale *= 0.9935; // HACK(shyndman): fudge for Chrome
+            scale *= 0.99999; // HACK(shyndman): fudge for Chrome
             transform += 'scaleX(' + scale + ')'
             break;
 
           case 'l':
           case 'r':
             var scale = (regionPositions.bl.y - regionPositions.l.y) / region.height;
-            scale *= 0.997; // HACK(shyndman): fudge for Chrome
+            scale *= 0.99999; // HACK(shyndman): fudge for Chrome
             transform += 'scaleY(' + scale + ')';
             break;
         }
@@ -395,6 +418,14 @@
       matrix[1][1] *= scale[1]
 
       return matrix;
+    },
+
+    newIdentityMatrix3: function() {
+      return [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ];
     },
 
     newIdentityMatrix4: function() {

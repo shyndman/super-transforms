@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "MaterialIcons-Regular";
+  src: url("../fonts/MaterialIcons-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.mi {
+  font-family: "MaterialIcons-Regular";
+  display: inline-block;
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  speak: none;
+  text-decoration: inherit;
+  text-transform: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

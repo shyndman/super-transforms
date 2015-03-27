@@ -1,5 +1,7 @@
 {
   "name": "super-transforms",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "lodash": "~3.5.0"
+  }
 }

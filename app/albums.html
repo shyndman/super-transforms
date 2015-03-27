@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Super Transforms</title>
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- endbuild -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700">
+
+    <!-- build:css styles/main.css -->
+    <link rel="stylesheet" href="styles/albums.css">
+    <!-- endbuild -->
+  </head>
+  <body>
+    <div id="app">
+      <!-- list view -->
+      <section id="list">
+        <header hero-id="header" hero>
+          <i class="mi">menu</i>
+          <h1>My Library</h1>
+          <i class="mi">search</i>
+          <i class="mi fullscreen">more_vert</i>
+        </header>
+        <ul class="albums"></ul>
+      </section>
+
+      <!-- detail view -->
+      <section id="view" style="visibility: hidden">
+        <header hero-id="header" hero translation-lock>
+          <i class="mi" style="flex:1">menu</i>
+          <i class="mi">star_outline</i>
+          <i class="mi">more_vert</i>
+        </header>
+        <div class="album" hero-id="album" hero>
+          <img class="album-art" src="images/kodaline.png" hero-id="album-art" hero>
+          <div class="fab"><span class="mi">play_arrow</span></div>
+          <div class="album-info" hero-id="album-info" hero style="background: #2a5168">
+            <h2>Kodaline</h2>
+            <h3>In a Perfect World</h3>
+          </div>
+          <ol class="album-tracklist">
+            <li><span>One Day</span></li>
+            <li><span>All I Want</span></li>
+            <li><span>Love Like This</span></li>
+            <li><span>High Hopes</span></li>
+            <li><span>Brand New Day</span></li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <script id="album-item" type="text/template">
+      <li hero-id="album" class="album-item <%= extraClasses %>">
+        <img src="<%= artPath %>" hero-id="album-art">
+        <div class="album-info" hero-id="album-info" style="background: <%= primary %>;">
+          <i class="mi star">star_outline</i>
+          <h2><%= album %></h2>
+          <h3><%= artist %></h3>
+        </div>
+      </li>
+    </script>
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="/bower_components/lodash/lodash.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js scripts/main.js -->
+    <script src="scripts/web-animations-next.min.js"></script>
+    <script src="scripts/shadow-patches.js"></script>
+    <script src="scripts/transform-animation.js"></script>
+    <script src="scripts/motion-path.js"></script>
+    <script src="scripts/hero-transition.js"></script>
+    <script src="scripts/albums.js"></script>
+    <!-- endbuild -->
+</body>
+</html>
+
+

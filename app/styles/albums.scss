@@ -1,0 +1,217 @@
+@import 'icons';
+
+$width: 360px;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: RobotoDraft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #6544b4;
+  margin: 40px 0;
+  overflow-x: hidden;
+}
+
+template {
+  display: none;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  max-width: $width;
+  height: 821px;
+  box-shadow: 0 7.5px 10px   1px rgba(0, 0, 0, 0.19), /* key */
+              0 2.5px 13.5px 2px rgba(0, 0, 0, 0.16); /* ambient */
+
+  > section {
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  background: #111;
+  padding: 16px 4px;
+
+  h1 {
+    color: white;
+    font-size: 21px;
+    font-weight: 400;
+    margin: 0;
+    margin-left: 24px;
+    flex: 1;
+  }
+
+  .mi {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.54);
+    width: 24px;
+    margin: 0 8px;
+
+    &:last-child {
+      margin-right: 4px;
+    }
+  }
+}
+
+#list {
+  .albums {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    background: #111;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .album-item {
+    $margin: 4px;
+    width: calc((100% - #{$margin}) / 2);
+    color: rgba(255, 255, 255, 0.87);
+    margin-bottom: $margin;
+
+    .album-info {
+      padding: 16px;
+      background: #212121;
+      margin-top: -4px;
+    }
+
+    h2, h3 {
+      font-weight: 400;
+      margin: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    h3 {
+      font-size: 15px;
+    }
+
+    .star {
+      font-size: 24px;
+      width: 24px;
+      margin: 8px -8px 0 4px;
+      float: right;
+      opacity: 0.7;
+    }
+
+    h3, .star {
+      color: rgba(255, 255, 255, 0.54);
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+
+    &.dark {
+      color: rgba(0, 0, 0, 0.54);
+
+      h3, .star {
+        color: rgba(0, 0, 0, 0.45);
+      }
+    }
+
+    &:nth-child(2n + 1) {
+      margin-right: $margin;
+    }
+  }
+}
+
+#view {
+  z-index: 2;
+  overflow: hidden;
+
+  header {
+    position: absolute;
+    width: 100%;
+    background: transparent;
+    z-index: 1;
+
+    .mi {
+      color: rgba(0, 0, 0, 0.54);
+    }
+  }
+
+  img {
+    width: 100%;
+  }
+
+  .album-info {
+    margin-top: -4px;
+    padding: 24px 64px 32px;
+  }
+
+  .fab {
+    position: absolute;
+    right: 16px;
+    top: 330px;
+    display: flex;
+    width: 60px;
+    height: 60px;
+    background: #4db7ac;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+
+    .mi {
+      width: 28px;
+      font-size: 28px;
+      color: rgba(0, 0, 0, 0.54);
+    }
+  }
+
+  h2, h3 {
+    color: white;
+    font-weight: normal;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h2 {
+    font-size: 42px;
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+
+  .album-tracklist {
+    background: white;
+    padding: 32px 0 16px 84px;
+    color: rgba(0, 0, 0, 0.54);
+
+    > li {
+      margin-bottom: 32px;
+      padding-left: 24px;
+      font-size: 16px;
+
+      span {
+        color: rgba(0, 0, 0, 0.83);
+      }
+
+      &:last-child {
+        margin-bottom: 16px;
+      }
+    }
+  }
+}

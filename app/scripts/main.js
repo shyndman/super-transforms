@@ -69,8 +69,8 @@
 
     var node =
       new global.goog.TransformAnimationNode(frame)
-        .translate(rect.left, rect.top)
-        .scale(scaleX, scaleY)
+        .translateTo(rect.left, rect.top)
+        .scaleTo(scaleX, scaleY)
         .transition(500, 'cubic-bezier(0.4, 0.0, 1, 1)')
         .withBorderRegions(borderRegions, shadowLayer)
 
