@@ -24,9 +24,11 @@
     this._scaleLocked = false;
     this._parent = void 0;
     this._children = void 0;
+    this._labelledChildren = void 0;
     this._borderRegions = void 0;
     this._borderElements = void 0;
     this._borderContainer = void 0;
+    this._isReset = void 0;
     this._update = this._update.bind(this);
 
     // TODO(shyndman): Refactor required
@@ -64,13 +66,19 @@
       return this;
     },
 
-    addChild: function(child) {
+    addChild: function(label, child) {
       if (!this._children) {
         this._children = [];
+        this._labelledChildren = {};
       }
       child._parent = this;
       this._children.push(child);
+      this._labelledChildren[label] = child;
       return this;
+    },
+
+    getChild: function(label) {
+      return this._labelledChildren ? this._labelledChildren[label] : null;
     },
 
     transformOrigin: function(x, y) {
@@ -150,6 +158,21 @@
       return anim;
     },
 
+    /**
+     * Resets the elements that contribute to this
+     */
+    reset: function() {
+      this._isReset = true;
+      this._resetElement();
+
+      // Prepare the children
+      if (this._children) {
+        this._children.forEach(function(c) {
+          c.reset();
+        });
+      }
+    },
+
     _prepareToRun: function() {
       var style = window.getComputedStyle(this._element);
       // Fill in missing source properties based on the element's current state
@@ -164,12 +187,35 @@
         this._element.style.transformOrigin = this._transformOrigin || style.transformOrigin;
       }
 
+      // Absolutely position all elements
+      this._absolutizeElement(style);
+
       // Prepare the children
       if (this._children) {
         this._children.forEach(function(c) {
           c._prepareToRun();
         });
       }
+    },
+
+    _absolutizeElement: function(style) {
+      // Order is important here, because style will mutate on element style
+      // changes
+      this._element.style.width = style.width;
+      this._element.style.height = style.height;
+      this._element.style.position = 'absolute';
+      this._element.style.left = '0';
+      this._element.style.top = '0';
+    },
+
+    _resetElement: function() {
+      this._element.style.width = '';
+      this._element.style.height = '';
+      this._element.style.position = '';
+      this._element.style.top = '';
+      this._element.style.left = '';
+      this._element.style.transform = '';
+      this._element.style.transformOrigin = '';
     },
 
     _transformToMatrix: function(transform) {
@@ -239,8 +285,11 @@
     },
 
     _update: function(time, element, anim) {
-      if (time == null) time = 1;
+      if (this._isReset) {
+        return;
+      }
 
+      time = time || 1;
       this._transformCurrent = {
         translateX: lerp(this._transformFrom.translateX, this._transformTo.translateX),
         translateY: lerp(this._transformFrom.translateY, this._transformTo.translateY),

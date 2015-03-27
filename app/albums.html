@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>Super Transforms</title>
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
@@ -21,7 +21,7 @@
     <div id="app">
       <!-- list view -->
       <section id="list">
-        <header hero-id="header" hero>
+        <header>
           <i class="mi">menu</i>
           <h1>My Library</h1>
           <i class="mi">search</i>
@@ -32,25 +32,27 @@
 
       <!-- detail view -->
       <section id="view" style="visibility: hidden">
-        <header hero-id="header" hero translation-lock>
-          <i class="mi" style="flex:1">menu</i>
+        <header>
+          <i class="mi back-button" style="flex:1">menu</i>
           <i class="mi">star_outline</i>
           <i class="mi">more_vert</i>
         </header>
         <div class="album" hero-id="album" hero>
-          <img class="album-art" src="images/kodaline.png" hero-id="album-art" hero>
-          <div class="fab"><span class="mi">play_arrow</span></div>
-          <div class="album-info" hero-id="album-info" hero style="background: #2a5168">
+          <img class="album-art" src="images/misty.png" hero-id="album-art" hero>
+          <div class="fab" hero-id="fab" hero  translation-lock><span class="mi">play_arrow</span></div>
+          <div class="album-info" hero-id="album-info" hero>
             <h2>Kodaline</h2>
             <h3>In a Perfect World</h3>
           </div>
-          <ol class="album-tracklist">
-            <li><span>One Day</span></li>
-            <li><span>All I Want</span></li>
-            <li><span>Love Like This</span></li>
-            <li><span>High Hopes</span></li>
-            <li><span>Brand New Day</span></li>
-          </ol>
+          <div class="album-tracklist" hero-id="album-tracklist" hero>
+            <ol>
+              <li><span>One Day</span></li>
+              <li><span>All I Want</span></li>
+              <li><span>Love Like This</span></li>
+              <li><span>High Hopes</span></li>
+              <li><span>Brand New Day</span></li>
+            </ol>
+          </div>
         </div>
       </section>
     </div>
@@ -63,6 +65,7 @@
           <h2><%= album %></h2>
           <h3><%= artist %></h3>
         </div>
+        <div hero-id="album-tracklist"></div>
       </li>
     </script>
 

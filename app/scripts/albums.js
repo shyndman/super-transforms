@@ -1,7 +1,13 @@
 !function() {
   var viewStateEle = document.querySelector('#view'),
       listStateEle = document.querySelector('#list'),
-      albumsEle = document.querySelector('.albums'),
+      artistHeaderEle = viewStateEle.querySelector('h2'),
+      albumHeaderEle = viewStateEle.querySelector('h3'),
+      albumInfoEle = viewStateEle.querySelector('.album-info'),
+      albumArtEle = viewStateEle.querySelector('.album-art'),
+      albumTracklistEle = viewStateEle.querySelector('.album-tracklist'),
+      fabEle = viewStateEle.querySelector('.fab'),
+      albumsEle = listStateEle.querySelector('.albums'),
       albumTemplate = _.template(document.getElementById('album-item').innerHTML),
       albums = [
         {
@@ -33,7 +39,7 @@
           album: 'Nocturnal',
           artist: 'Yuna',
           primary: '#ffe900',
-          secondary: '#e6d000',
+          secondary: '#ea5085',
           extraClasses: 'dark'
         },
         {
@@ -41,7 +47,7 @@
           album: 'To Pimp A Butterfly',
           artist: 'Kendrick Lamar',
           primary: '#e9e9e9',
-          secondary: '',
+          secondary: '#575757',
           extraClasses: 'dark'
         },
         {
@@ -52,18 +58,26 @@
           secondary: '#b50008',
           extraClasses: ''
         }
-      ];
+      ],
+      player, transformNode;
 
+  // Fill albumbs
   albumsEle.innerHTML = _.map(albums, function(album) {
     return albumTemplate(album);
   }).join('');
 
+  // Full-screen support
   document.querySelector('.fullscreen').onclick = fullscreenClicked;
+
+  // Animation triggers
   _.forEach(document.querySelectorAll('.album-item'), function(item, i) {
-    item.onclick = albumClicked.bind(item, albums[i]);
+    item.onclick = transitionToViewState.bind(item, albums[i]);
   });
 
-  function albumClicked(album, e) {
+  // Reversing animation trigger
+  viewStateEle.querySelector('.back-button').onclick = transitionToListState;
+
+  function transitionToViewState(album, e) {
     configureViewState(album);
 
     // Clear previous heroes
@@ -77,22 +91,82 @@
       hero.setAttribute('hero', 'hero');
     });
 
-    var transition = new goog.HeroTransition('album', viewStateEle, listStateEle);
-    var transform = transition.build();
-    transform.transition(200, 'cubic-bezier(0.4, 0.0, 1, 1)');
-    var anim = transform.build();
-    document.timeline.play(anim);
+    transformNode = new goog.HeroTransition('album', viewStateEle, listStateEle)
+      .build()
+      .transition(250, 'cubic-bezier(0.4, 0.0, 0.2, 1)');
+
+    // Scale the fab
+    transformNode.getChild('fab').scaleFrom(0, 0);
+
+    var heroAnim = transformNode.build();
+    var group = new AnimationGroup([
+      heroAnim,
+      buildHeaderFadeIn(artistHeaderEle),
+      buildHeaderFadeIn(albumHeaderEle),
+      buildBackgroundDarken(album),
+      buildTrackListFade()
+    ])
 
     viewStateEle.style.visibility = '';
+    player = document.timeline.play(group);
+  }
 
-    // this.querySelector('.album-info').style.background = album.secondary;
+  function transitionToListState() {
+    if (!player) {
+      return;
+    }
+
+    player.reverse();
+    player.onfinish = function() {
+      viewStateEle.style.visibility = 'hidden';
+      transformNode.reset();
+      albumTracklistEle.style.position = '';
+      albumTracklistEle.style.top = '';
+      albumTracklistEle.style.width = '';
+      albumTracklistEle.style.transformOrigin = '';
+    };
+    player = null;
+  }
+
+  function buildHeaderFadeIn(ele) {
+    return new Animation(ele, [
+      { opacity: 0 }, { opacity: 1 }
+    ], {
+      duration: 500,
+      delay: 0,
+      fill: 'both',
+      easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)'
+    });
+  }
+
+  function buildBackgroundDarken(album) {
+    return new Animation(albumInfoEle, [
+      { background: album.primary }, { background: album.secondary }
+    ], {
+      duration: 200,
+      delay: 100,
+      fill: 'both',
+      easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)'
+    });
+  }
+
+  function buildTrackListFade() {
+    return new Animation(albumTracklistEle.querySelector('ol'), [
+      { opacity: 0 }, { opacity: 1 }
+    ], {
+      duration: 200,
+      delay: 200,
+      fill: 'both',
+      easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)'
+    });
   }
 
   function configureViewState(album) {
-    viewStateEle.querySelector('.album-art').src = album.artPath;
-    viewStateEle.querySelector('.album-info').style.background = album.primary;
-    viewStateEle.querySelector('h2').innerHTML = album.artist;
-    viewStateEle.querySelector('h3').innerHTML = album.album;
+    albumArtEle.src = album.artPath;
+    fabEle.style.background = album.primary;
+    albumInfoEle.style.background = album.primary;
+    artistHeaderEle.innerHTML = album.artist;
+    albumHeaderEle.innerHTML = album.album;
   }
 
   function fullscreenClicked() {

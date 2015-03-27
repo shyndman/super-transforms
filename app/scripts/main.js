@@ -76,6 +76,7 @@
 
     if (backgroundCheck.checked) {
       node.addChild(
+        'background',
         new global.goog.TransformAnimationNode(background)
           .scaleLocked(true)
           .translationLocked(translationLockCheck.checked)

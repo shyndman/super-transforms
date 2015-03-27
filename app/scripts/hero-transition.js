@@ -58,45 +58,31 @@
         .scaleFrom(rootTransforms.scaleX, rootTransforms.scaleY)
         .scaleTo(1, 1);
 
-
-      var destRects = Object.keys(toHeroes).reduce(function(acc, heroId) {
-        var hero = toHeroes[heroId]
-        acc[heroId] = HeroTransition._offsetRect(rootToRect, hero.getBoundingClientRect());
-        return acc;
-      }, {});
-
-      Object.keys(fromHeroes).forEach(function(heroId) {
+      Object.keys(toHeroes).forEach(function(heroId) {
         if (heroId == this._rootHeroId) {
           return;
         }
-        if (!fromHeroes[heroId] || !toHeroes[heroId]) {
-          console.warn('No hero found with ID', heroId);
-          return;
-        }
 
-        // if (heroId == 'album-info') debugger;
-
-        var fromHero = fromHeroes[heroId],
-            toHero = toHeroes[heroId],
-            destRect = destRects[heroId];
-
-        toHero.style.position = 'absolute';
-        toHero.style.top = '0';
-        toHero.style.left = '0';
-        toHero.style.width = '100%';
-
-        var fromRect = HeroTransition._offsetRect(rootFromRect, fromHero.getBoundingClientRect()),
+        var toHero = toHeroes[heroId]
+            fromHero = fromHeroes[heroId] || toHero,
+            fromRect = HeroTransition._offsetRect(rootFromRect, fromHero.getBoundingClientRect()),
             toRect = HeroTransition._offsetRect(rootToRect, toHero.getBoundingClientRect()),
             transforms = HeroTransition._getTransforms(fromRect, toRect);
 
         var child = new goog.TransformAnimationNode(toHero)
           .scaleLocked(true)
           .translateFrom(fromRect.left, fromRect.top)
-          .translateTo(destRect.left, destRect.top)
+          .translateTo(toRect.left, toRect.top)
           .scaleFrom(transforms.scaleX, transforms.scaleY)
           .scaleTo(1, 1);
 
-        root.addChild(child);
+        if (toHero.hasAttribute('translation-lock')) {
+          child
+            .translateFrom(150, 50)
+            .translateTo(toRect.left, 0);
+        }
+
+        root.addChild(heroId, child);
       }, this);
 
       // root._prepareToRun();

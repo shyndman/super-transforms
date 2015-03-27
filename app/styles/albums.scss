@@ -1,6 +1,6 @@
 @import 'icons';
 
-$width: 360px;
+$width: 414px;
 
 * {
   box-sizing: border-box;
@@ -14,12 +14,7 @@ body {
   align-items: center;
   justify-content: center;
   background: #6544b4;
-  margin: 40px 0;
   overflow-x: hidden;
-
-  @media (max-width: 600px) {
-    margin: 0;
-  }
 }
 
 template {
@@ -65,15 +60,26 @@ header {
 #list {
   position: absolute;
   top: 0;
-  width: $width;
+  width: inherit;
+  max-width: inherit;
+
+  header {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    width: inherit;
+    max-width: inherit;
+
+    + * {
+      margin-top: 56px;
+    }
+  }
 
   .albums {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     background: #111;
-    margin: 0;
-    padding: 0;
     list-style: none;
   }
 
@@ -140,9 +146,11 @@ header {
 #view {
   position: fixed;
   top: 0;
-  width: $width;
+  bottom: 0;
   z-index: 2;
   overflow: hidden;
+  width: inherit;
+  max-width: inherit;
 
   header {
     position: absolute;
@@ -167,7 +175,9 @@ header {
   .fab {
     position: absolute;
     right: 16px;
-    top: 330px;
+    top: 0;
+    z-index: 3;
+    margin-top: 93%;
     display: flex;
     width: 60px;
     height: 60px;
@@ -200,22 +210,27 @@ header {
     font-size: 16px;
   }
 
+
   .album-tracklist {
     background: white;
-    padding: 32px 0 16px 84px;
     color: rgba(0, 0, 0, 0.54);
+    margin-top: -4px;
 
-    > li {
-      margin-bottom: 32px;
-      padding-left: 24px;
-      font-size: 16px;
+    > ol {
+      padding: 32px 0 16px 84px;
 
-      span {
-        color: rgba(0, 0, 0, 0.83);
-      }
+      > li {
+        margin-bottom: 32px;
+        padding-left: 24px;
+        font-size: 16px;
 
-      &:last-child {
-        margin-bottom: 16px;
+        span {
+          color: rgba(0, 0, 0, 0.83);
+        }
+
+        &:last-child {
+          margin-bottom: 16px;
+        }
       }
     }
   }
