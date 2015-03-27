@@ -16,6 +16,10 @@ body {
   background: #6544b4;
   margin: 40px 0;
   overflow-x: hidden;
+
+  @media (max-width: 600px) {
+    margin: 0;
+  }
 }
 
 template {
