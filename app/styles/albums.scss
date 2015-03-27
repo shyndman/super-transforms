@@ -33,12 +33,6 @@ template {
   height: 821px;
   box-shadow: 0 7.5px 10px   1px rgba(0, 0, 0, 0.19), /* key */
               0 2.5px 13.5px 2px rgba(0, 0, 0, 0.16); /* ambient */
-
-  > section {
-    position: absolute;
-    top: 0;
-    width: 100%;
-  }
 }
 
 header {
@@ -69,6 +63,10 @@ header {
 }
 
 #list {
+  position: absolute;
+  top: 0;
+  width: $width;
+
   .albums {
     display: flex;
     flex-direction: row;
@@ -140,6 +138,9 @@ header {
 }
 
 #view {
+  position: fixed;
+  top: 0;
+  width: $width;
   z-index: 2;
   overflow: hidden;
 
