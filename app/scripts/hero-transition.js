@@ -52,12 +52,11 @@
       toRoot.style.height = rootToRect.height + 'px';
 
       var root = new goog.TransformAnimationNode(toRoot)
-        .transformOrigin(0, 0)
+        .transformOrigin(0, 360)
         .translateFrom(rootTransforms.dX, rootTransforms.dY)
-        .translateTo(0, 0)
+        .translateTo(0, rootTransforms.dY)
         .scaleFrom(rootTransforms.scaleX, rootTransforms.scaleY)
-        .scaleTo(1, 1);
-
+        .scaleTo(1, rootTransforms.scaleY);
 
       var destRects = Object.keys(toHeroes).reduce(function(acc, heroId) {
         var hero = toHeroes[heroId]
@@ -80,20 +79,14 @@
             toHero = toHeroes[heroId],
             destRect = destRects[heroId];
 
-        toHero.style.position = 'absolute';
-        toHero.style.top = '0';
-        toHero.style.left = '0';
-        toHero.style.width = '100%';
-
         var fromRect = HeroTransition._offsetRect(rootFromRect, fromHero.getBoundingClientRect()),
-            toRect = HeroTransition._offsetRect(rootToRect, toHero.getBoundingClientRect()),
-            transforms = HeroTransition._getTransforms(fromRect, toRect);
+            toRect = HeroTransition._offsetRect(rootToRect, toHero.getBoundingClientRect());
 
         var child = new goog.TransformAnimationNode(toHero)
           .scaleLocked(true)
           .translateFrom(fromRect.left, fromRect.top)
           .translateTo(destRect.left, destRect.top)
-          .scaleFrom(transforms.scaleX, transforms.scaleY)
+          .scaleFrom(fromRect.width / toRect.width, fromRect.height / toRect.height)
           .scaleTo(1, 1);
 
         root.addChild(child);

@@ -5,6 +5,8 @@
   function TransformAnimationNode(element) {
     this._element = element;
     this._transformFrom = {
+      originX: void 0,
+      originY: void 0,
       translateX: void 0,
       translateY: void 0,
       scaleX: void 0,
@@ -12,6 +14,8 @@
       rotation: void 0
     };
     this._transformTo = {
+      originX: void 0,
+      originY: void 0,
       translateX: void 0,
       translateY: void 0,
       scaleX: void 0,
@@ -36,6 +40,12 @@
       right: element.offsetLeft + parseInt(style.width, 10),
       top: element.offsetTop,
       bottom: element.offsetTop + parseInt(style.height, 10),
+      get width() {
+        return this.bottom - this.top;
+      },
+      get height() {
+        return this.right - this.left;
+      },
       get corners() {
         return {
           tl: { x: this.left, y: this.top },
@@ -75,8 +85,8 @@
 
     transformOrigin: function(x, y) {
       // TODO(shyndman): Support units other than pixels
-      var to = x + 'px ' + y + 'px';
-      this._transformOrigin = to;
+      this._transformFrom.originX = x;
+      this._transformFrom.originY = y;
       return this;
     },
 
@@ -154,15 +164,16 @@
       var style = window.getComputedStyle(this._element);
       // Fill in missing source properties based on the element's current state
       setDefaults(this._transformFrom, this._transformToComponents(style.transform));
+      setDefaults(this._transformFrom, this._parseTransformOrigin(style.transformOrigin));
+
       // Fill in missing destination properties based on the source properties
       setDefaults(this._transformTo, this._transformFrom);
 
+      // Absolutely position elements
+      this._applyAbsolutePosition();
+
       // Set the transform origin
-      if ((this._scaleLocked || this._translationLocked) && this._parent) {
-        this._element.style.transformOrigin = this._parent._transformOrigin;
-      } else {
-        this._element.style.transformOrigin = this._transformOrigin || style.transformOrigin;
-      }
+      this._applyTransformOrigin();
 
       // Prepare the children
       if (this._children) {
@@ -172,7 +183,44 @@
       }
     },
 
-    _transformToMatrix: function(transform) {
+    _applyAbsolutePosition: function() {
+      var style = window.getComputedStyle(this._element);
+      // Ordering is important here. Style mutates as the element style changes
+      this._element.style.width = style.width;
+      this._element.style.height = style.height;
+      this._element.style.position = 'absolute';
+      this._element.style.top = '0';
+      this._element.style.left = '0';
+    },
+
+    _applyTransformOrigin: function() {
+      var origin = {};
+
+      if ((this._scaleLocked || this._translationLocked) && this._parent) {
+        origin.x = this._transformFrom.originX = this._parent._transformFrom.originX - this._elementRect.left - this._parent._elementRect.left;
+        origin.y = this._transformFrom.originY = this._parent._transformFrom.originY - this._elementRect.top - this._parent._elementRect.top;
+      } else {
+        origin.x = this._transformFrom.originX,
+        origin.y = this._transformFrom.originY
+      }
+
+      this._element.style.transformOrigin = origin.x + 'px ' + origin.y + 'px';
+    },
+
+    _parseTransformOrigin: function(transformOrigin) {
+      var float = '(-?\\d+(\\.\\d+)?)';
+      var unit = 'px';
+
+      var pattern = new RegExp(float + unit + '\\s+' + float + unit);
+      var matches = pattern.exec(transformOrigin);
+
+      return {
+        originX: parseFloat(matches[1]),
+        originY: parseFloat(matches[3])
+      };
+    },
+
+    _parseTransform: function(transform) {
       if (transform == 'none') {
         return goog.math.newIdentityMatrix3();
       }
@@ -203,21 +251,37 @@
     },
 
     _transformToComponents: function(transform) {
-      var matrix = this._transformToMatrix(transform);
+      var matrix = this._parseTransform(transform);
       return global.goog.math.unmatrix(
         matrix[0][0], matrix[0][1],
         matrix[1][0], matrix[1][1],
         matrix[0][2], matrix[1][2]);
     },
 
-    _componentsToTransform: function(comps) {
-      var translate = 'translate(' + comps.translateX + 'px, ' + comps.translateY + 'px)';
-      var scale = 'scale(' + comps.scaleX + ', ' + comps.scaleY + ')';
-      var rotation = 'rotate(' + comps.rotation + ')';
-      var parentTransform = this._parent ? this._parent._transformCurrent : null;
-      var functions = [
-        translate, scale, rotation
-      ];
+    /**
+     * Takes the interpolated set of transformations for this element, and
+     * incorporates the
+     */
+    _buildRelativeTransform: function(comps) {
+      var translate = 'translate(' + comps.translateX + 'px, ' + comps.translateY + 'px)',
+          scale = 'scale(' + comps.scaleX + ', ' + comps.scaleY + ')',
+          rotation = 'rotate(' + comps.rotation + ')',
+          parentTransform = this._parent ? this._parent._transformCurrent : null,
+          functions = [
+            translate, scale, rotation
+          ];
+
+      if (!this._parent && this._transformFrom.originX !== 0) {
+        var pixelsSmaller = (this._elementRect.width - (this._elementRect.width * comps.scaleX));
+        var originRatio = this._transformFrom.originX / this._elementRect.width;
+        functions.unshift('translateX(' + (pixelsSmaller * originRatio) + 'px)');
+      }
+
+      if (!this._parent && this._transformFrom.originY !== 0) {
+        var pixelsSmaller = (this._elementRect.height - (this._elementRect.height * comps.scaleY));
+        var originRatio = this._transformFrom.originY / this._elementRect.height;
+        functions.unshift('translateY(-' + (pixelsSmaller * originRatio) + 'px)');
+      }
 
       // Apply transforms that counter the parent's
       if (this._translationLocked) {
@@ -229,6 +293,7 @@
       if (this._scaleLocked) {
         var normScaleX = 1 / parentTransform.scaleX;
         var normScaleY = 1 / parentTransform.scaleY;
+
         functions.unshift('scale(' + normScaleX + ', ' + normScaleY + ')');
       }
 
@@ -250,7 +315,7 @@
       };
 
       this._element.style.transform =
-        this._componentsToTransform(this._transformCurrent);
+        this._buildRelativeTransform(this._transformCurrent);
       this._positionBorders();
 
       if (this._children) {
@@ -269,7 +334,7 @@
         return;
       }
 
-      var matrix = this._transformToMatrix(
+      var matrix = this._parseTransform(
         window.getComputedStyle(this._element).transform);
       var corners = this._elementRect.corners;
       var transformedCorners = Object.keys(corners).reduce(
